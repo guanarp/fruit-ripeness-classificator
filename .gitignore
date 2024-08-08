@@ -1,0 +1,6 @@
+pc/datasets/
+pc/yolov8n.pt
+pc/yolov9c.pt
+pc/yolov9e.pt
+pc/runs/detect/train/args.yaml
+pc/runs/detect/train2/args.yaml
