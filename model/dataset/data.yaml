@@ -1,0 +1,5 @@
+train: path/to/dataset/images
+val: path/to/validation/images
+
+nc: 3  # Number of classes (change this to the number of your classes)
+names: ['class1', 'class2', 'class3']  # Replace with your actual class names
