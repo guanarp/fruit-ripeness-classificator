@@ -30,7 +30,6 @@ def record_video(file_path="recorded_video.mp4", resolution=None, framerate=30):
         
     except KeyboardInterrupt:
         print("\n[INFO] Recording interrupted by user.")
-        return False
     
     finally:
         picam2.stop_recording()
@@ -48,7 +47,9 @@ def upload_to_drive(file_path):
         gauth.SaveCredentialsFile("credentials.json")  # Save the new credentials
 
     drive = GoogleDrive(gauth)
-    file = drive.CreateFile({'title': os.path.basename(file_path)})
+    file_metadata = {'title': os.path.basename(file_path)}
+    file_metadata['parents'] = [{"id": folder_id}]
+    file = drive.CreateFile(file_metadata)
     file.SetContentFile(file_path)
     file.Upload()
     print(f"Uploaded {file_path} to Google Drive")
@@ -61,6 +62,8 @@ def upload_to_drive(file_path):
         print(f"File not found: {file_path}")
 
 if __name__ == "__main__":
+    folder_id = '1gGmNlZXm_09bzUwqOuw2vP9VN3yXMr9D'
+    
     # Step 1: Record video until Ctrl+C is pressed
     file_name = f"video_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4"
     
