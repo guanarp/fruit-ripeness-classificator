@@ -8,7 +8,7 @@ from time import sleep
 picam2 = Picamera2()
 print(picam2.sensor_modes)
 sensor_mode = picam2.sensor_modes[0]
-config = picam2.create_still_configuration(main={"size":(640,640), "format":"BGR888"},controls={'FrameRate': 60}, display="main")
+config = picam2.create_still_configuration(main={"size":(1280,720), "format":"BGR888"},controls={'FrameRate': 60}, display="main")
 #config = picam2.create_still_configuration(
 #    main={"size": sensor_mode['size'], "format":"BGR888"},
 #    controls={"FrameRate": sensor_mode['fps']},
@@ -34,7 +34,8 @@ except Exception as e:
 #cam = cv2.VideoCapture(1)
 
 # Assuming these are your current streaming settings
-HOST = '192.168.1.132'  # The IP address of your PC
+#HOST = '192.168.1.132'  # The IP address of your PC
+HOST = '192.168.135.31' #varia en lar
 PORT = 9999  # The port used for the connection
 
 # Set up a socket for sending data (streaming images)

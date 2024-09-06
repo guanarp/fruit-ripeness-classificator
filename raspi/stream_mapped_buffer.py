@@ -142,7 +142,7 @@ if __name__ == "__main__":
     picam2.start()
     print("[Main] Picamera2 has been started.")
 
-    process = StreamingProcess(picam2, 'main')
+    process = StreamingProcess(picam2, 'main', host='192.168.135.31')
     print("[Main] StreamingProcess instance created.")
     process.start()
     print("[Main] StreamingProcess has been started.")
