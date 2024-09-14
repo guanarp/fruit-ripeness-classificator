@@ -17,7 +17,8 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 if not torch.cuda.is_available():
     raise ValueError("Cuda not available")
 #model = YOLO('yolov8n.pt')  # You can choose a different model based on your requirement
-model = YOLO('yolov9c.pt')  # You can choose a different model based on your requirement
+#model = YOLO('yolov9c.pt')  # You can choose a different model based on your requirement
+model = YOLO('yolov10m.pt')
 #model = YOLO('yolov 9e.pt')
 names = model.model.names
 

@@ -1,0 +1,99 @@
+workflow
+
+data_annotation.py -> creo anotaciones persistidas y no persistidas cambiando parametros de model.track y output_dir, 			los videos se toman desde folder_path
+
+track_correction.py -> toma las anotaciones del tracker no persistido de 								output/video_batch/annotated_frames_persisted y las anotaciones del tracker persistido de 			output/video_batch/annotated_frames_persisted_true y las mergea con los tracks 'correctos'
+
+relabel2.py -> A partir de Annotations.csv y annotations en corrected_annotations/ crea las anotaciones con las 		custom classes y las guarda en new_class_annotations
+
+render_relabeling.y -> A partir de anotaciones en new_class_anotations y videos en model/dataset/video_batch crea 			videos con las dets renderizadas para verificar visualmente que esten bien, guarda los videos 			en videos_new_with_detections_new_class (creo)
+
+frame_extractor.py  -> extrae frames de new_class_annotations a partir del video en model/dataset, guarda los frames 			en model/dataset/images/train    Ojo mover al exp pertinente
+
+split_annotation.py -> splittea los txts en el formato de yolo a partir de anotaciones en new_class_annotations, 			frames de extracted_frames, y los guarda en models/dataset/labels/train; si las imgs no estan 			en models/dataset/images/train/ las mueve ahi de su path original   Ojo mover annotations al exp pertinente
+
+train.py -> 
+
+
+
+
+Example Rule of Thumb:
+
+    Small Dataset (< 10,000 images): 50-100 epochs.
+    Medium Dataset (10,000 - 100,000 images): 20-50 epochs.
+    Large Dataset (> 100,000 images): 10-30 epochs (depending on data complexity).
+
+
+
+
+
+
+
+
+
+1. Mean Average Precision (mAP):
+
+mAP is the most common metric for object detection. It averages the precision across all classes and Intersection over Union (IoU) thresholds.
+
+    mAP@0.5: This is the mAP at an IoU threshold of 0.5, which is commonly used for detection tasks. It measures how well your model can identify objects without needing very precise bounding boxes.
+    mAP@0.5:0.95: This is the mean mAP at IoU thresholds ranging from 0.5 to 0.95, increasing in steps of 0.05. It’s a more stringent measure because it requires precise bounding boxes.
+
+"Good" mAP Values:
+
+    mAP@0.5:
+        For real-time object detection tasks, a mAP@0.5 of 50-70% is often considered a good range for practical applications.
+        Values over 70% are excellent, especially for complex datasets.
+    mAP@0.5:0.95:
+        A value between 30-50% is generally good for most custom models. Anything above 50% is exceptional for highly precise bounding box localization.
+
+2. Precision and Recall:
+
+    Precision: Measures how many of the objects detected by the model are actually correct (i.e., true positives out of all positive predictions). High precision means fewer false positives.
+    Recall: Measures how many of the true objects in the dataset are detected by the model (i.e., true positives out of all actual objects). High recall means fewer false negatives.
+
+"Good" Precision and Recall Values:
+
+    Precision: For most tasks, precision values over 80% are ideal. If your application can tolerate a few false positives, a precision of 60-80% might still be acceptable.
+
+    Recall: A recall over 70-80% is usually good, though higher recall is always better if missing objects is critical in your application.
+
+3. F1 Score:
+
+The F1 score is the harmonic mean of precision and recall. It provides a balanced measure when both false positives and false negatives are important for your task.
+
+    F1 = 2 * (precision * recall) / (precision + recall)
+
+"Good" F1 Values:
+
+    An F1 score over 0.7 is typically good, meaning a balance between precision and recall. Higher F1 scores (closer to 1) indicate better overall performance.
+
+4. Loss Values:
+
+    Training Loss and Validation Loss: During training, lower loss values indicate better model performance. The most important consideration is that validation loss should decrease along with training loss. If validation loss starts increasing while training loss keeps decreasing, it indicates overfitting.
+
+"Good" Loss Values:
+
+    Detection Loss (GIoU, Objectness, Classification): Values should steadily decrease over epochs.
+        A final loss value of < 1.0 for GIoU and < 0.1 for objectness and classification loss are often considered good for object detection tasks.
+
+What "Good Enough" Means in Context:
+
+    Small, Simple Dataset (e.g., a custom dataset with a few object classes and good image quality):
+        mAP@0.5: > 70%.
+        Precision/Recall: > 80%.
+
+    Medium Complexity Dataset (e.g., a few object classes but more variability in image quality, backgrounds, etc.):
+        mAP@0.5: 50-70%.
+        Precision/Recall: 70-80%.
+
+    Complex Dataset (e.g., many object classes, varying lighting conditions, occlusions, etc.):
+        mAP@0.5: 40-60% can still be considered acceptable, especially if the model is performing well in real-world applications.
+        Precision/Recall: 60-70% might be good enough, depending on the use case.
+
+When is it "Good Enough"?:
+
+    Application-specific: If the model’s performance is acceptable for the intended application (e.g., detecting objects in real time with acceptable false positive/negative rates), the metrics are "good enough" even if they don't seem high.
+
+    Real-time applications: For tasks where real-time detection is more important than pinpoint accuracy (e.g., video surveillance, autonomous navigation), achieving 50-70% mAP@0.5 and good enough precision/recall could be sufficient.
+
+    High-stakes tasks: In situations where false negatives are critical (e.g., medical diagnostics, safety systems), you should aim for higher recall values even if it comes at the cost of lower precision.
