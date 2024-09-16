@@ -20,6 +20,10 @@ if not torch.cuda.is_available():
     print("Cuda not available :(")
 #model = YOLO('yolov8n.pt')  # You can choose a different model based on your requirement
 model = YOLO(r'model\runs\exp1_y_exp2\yolov10_exp117\weights\best.pt')  # You can choose a different model based on your requirement
+=======
+#model = YOLO('yolov9c.pt')  # You can choose a different model based on your requirement
+model = YOLO('yolov10m.pt')
+>>>>>>> 4388dadc8b7ad186d0ca7b10c22a7429223706b8
 #model = YOLO('yolov 9e.pt')
 names = model.model.names
 

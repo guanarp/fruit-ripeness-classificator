@@ -1,11 +1,15 @@
 import cv2
 from picamera2 import Picamera2, Preview
+from picamera2.encoders import H264Encoder, Quality
 from datetime import datetime
+import time
 import os
-from pydrive2.auth import GoogleAuth
-from pydrive2.drive import GoogleDrive
+#from pydrive2.auth import GoogleAuth
+#from pydrive2.drive import GoogleDrive
 
-def record_video(file_path="recorded_video.mp4", resolution=None, framerate=30):
+encoder = H264Encoder()
+
+def record_video(file_path=None, resolution=None, framerate=30):
     picam2 = Picamera2()
     
     # Use the camera's default maximum resolution if none is specified
@@ -14,22 +18,31 @@ def record_video(file_path="recorded_video.mp4", resolution=None, framerate=30):
         resolution = (camera_info['size'][0], camera_info['size'][1])
     
     video_config = picam2.create_video_configuration(
-        main={"size": resolution, "format": "BGR888"},
+        main={"size":resolution, "format": "BGR888"},
         controls={"FrameRate": framerate},
         display="main"
     )
     picam2.configure(video_config)
     
+    if file_path is None:
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        file_path = f"video_{timestamp}.mp4"
+    
     try:
-        picam2.start_recording(file_path)
+        picam2.start_recording(encoder, file_path, quality=Quality.VERY_HIGH)
         print(f"Recording started. Saving video to {file_path}")
-        
+        counter = 0
         while True:
             # Keep recording until interrupted by user (Ctrl+C)
-            picam2.wait_recording(1)  # Wait for 1 second intervals
+            #picam2.wait_recording(1)  # Wait for 1 second intervals
+            print(counter,"\n")
+            counter += 1
+            time.sleep(1)
         
     except KeyboardInterrupt:
         print("\n[INFO] Recording interrupted by user.")
+    except Exception as e:
+        print(e)
     
     finally:
         picam2.stop_recording()
@@ -65,12 +78,19 @@ if __name__ == "__main__":
     folder_id = '1gGmNlZXm_09bzUwqOuw2vP9VN3yXMr9D'
     
     # Step 1: Record video until Ctrl+C is pressed
-    file_name = f"video_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4"
     
-    recording_success = record_video(file_path=file_name, framerate=30)
+    
+    local_save_directory = "/home/pi/videos"
+    os.makedirs(local_save_directory, exist_ok=True)
+    
+    file_name = f"video_{datetime.now().strftime('%Y%m%d_%H%M%S')}.h264"
+    file_path = os.path.join(local_save_directory, file_name)
+    
+    recording_success = record_video(file_path=file_path, framerate=30)
     
     if recording_success:
         # Step 2: Upload the recorded video to Google Drive and delete it locally
-        upload_to_drive(file_name)
+        #upload_to_drive(file_name)
+        print("Sucessfull recording")
     else:
         print("[INFO] No video to upload since recording was interrupted.")

@@ -4,3 +4,15 @@ pc/yolov9c.pt
 pc/yolov9e.pt
 pc/runs/detect/train/args.yaml
 pc/runs/detect/train2/args.yaml
+model/dataset/
+output/
+output2/
+datasets/
+*.pt
+corrected_annotations/
+model/runs/
+new_class_annotations/
+videos_new_with_detections/
+videos_new_with_detections_new_class/
+model/relabel.py
+

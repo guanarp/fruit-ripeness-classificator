@@ -158,10 +158,10 @@ def annotate_all_videos(folder_path, model_name, output_dir):
 
 if __name__ == "__main__":
     start_anotation_time = time()
-    folder_path = "./model/dataset/naranja_videos1"
+    folder_path = "./model/dataset/naranja_videos2"
     model_name = "yolov10x.pt"  # Path to your YOLOv10 model
     #model_name = "yolov9e.pt"
-    output_dir = "output/naranja_videos1/annotated_frames_persisted_true"
+    output_dir = "output/naranja_videos2/annotated_frames_persisted_true"
     
     annotate_all_videos(folder_path, model_name, output_dir)
     end_anotation_time = time()
