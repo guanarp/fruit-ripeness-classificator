@@ -7,23 +7,30 @@ import sys
 from ultralytics import YOLO
 from ultralytics.utils.plotting import colors, Annotator
 import torch
+from torchvision.ops import nms
 
-HOST = '192.168.1.132'
+#HOST = '192.168.1.132'
+HOST = '192.168.135.31' #varia
 PORT = 9999
-buffSize = 65535
+buffSize = 65000
 
 # Load the YOLO model and use GPU if available
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 if not torch.cuda.is_available():
-    raise ValueError("Cuda not available")
+    print("Cuda not available :(")
 #model = YOLO('yolov8n.pt')  # You can choose a different model based on your requirement
-model = YOLO('yolov9c.pt')  # You can choose a different model based on your requirement
+model = YOLO(r'model\runs\exp1_y_exp2\yolov10_exp117\weights\best.pt')  # You can choose a different model based on your requirement
+=======
+#model = YOLO('yolov9c.pt')  # You can choose a different model based on your requirement
+model = YOLO('yolov10m.pt')
+>>>>>>> 4388dadc8b7ad186d0ca7b10c22a7429223706b8
 #model = YOLO('yolov 9e.pt')
 names = model.model.names
 
 # Create a UDP socket and bind it
 server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 server.bind((HOST, PORT))
+server.settimeout(2)  # Set a 2-second timeout for receiving data
 print('Now waiting for frames...')
 
 cv2.startWindowThread()
@@ -40,8 +47,13 @@ while True:
     start_receive = time.time_ns()
     chunks = []
     while True:
-        # Receive data
-        data, address = server.recvfrom(buffSize)
+        try:
+            # Receive data with timeout handling
+            data, address = server.recvfrom(buffSize)
+        except socket.timeout:
+            print("Socket timeout, waiting for more frames...")
+            continue
+        
         # Check for the unique header
         if data.startswith(b'FRAME'):
             # Extract the length of the image data (following the 5-byte header and 4-byte length)
@@ -71,11 +83,21 @@ while True:
         start_display = time.time_ns()
         # Display the image
         if img is not None:
-            # Perform detection
             results = model(img)
-            boxes = results[0].boxes.xyxy.cpu()
-            clss = results[0].boxes.cls.cpu().tolist()
-            print(results)
+            for idx, result in enumerate(results):
+                dets = result.boxes.data.cpu()
+                boxes = dets[:, :4]  # x1, y1, x2, y2
+                scores = dets[:, 4]  # confidence
+                indices = nms(boxes, scores, iou_threshold=0.5)
+                filtered_dets = dets[indices].numpy()
+                #print(filtered_dets)
+                boxes = filtered_dets[:,:4]
+                clss = filtered_dets[:,5]
+                print("Filtered dets:", filtered_dets)
+            # # Perform detection
+            # boxes = results[0].boxes.xyxy.cpu()
+            # clss = results[0].boxes.cls.cpu().tolist()
+            # #print(results)
             annotator = Annotator(img, line_width=2)
             # Render detections on the image
             for box, cls in zip(boxes, clss):
@@ -86,6 +108,7 @@ while True:
 
             #Display the image
             cv2.imshow('frames', img_with_detections)
+            #cv2.imshow('frames',img)
             #imS = cv2.resize(img, (1280, 720))     
             #cv2.imshow('frames', img)
             if cv2.waitKey(1) & 0xFF == 27:  # ESC key
@@ -118,6 +141,7 @@ while True:
             first_time = False
     else:
         print("Incomplete frame data received")
+        print(f"img data {len(img_data)}, length {length}")
 # Modifications end here
 
 # Cleanup
