@@ -6,7 +6,7 @@ track_correction.py -> toma las anotaciones del tracker no persistido de 							
 
 relabel2.py -> A partir de Annotations.csv y annotations en corrected_annotations/ crea las anotaciones con las 		custom classes y las guarda en new_class_annotations
 
-render_relabeling.y -> A partir de anotaciones en new_class_anotations y videos en model/dataset/video_batch crea 			videos con las dets renderizadas para verificar visualmente que esten bien, guarda los videos 			en videos_new_with_detections_new_class (creo)
+render_relabeling.py -> A partir de anotaciones en new_class_anotations y videos en model/dataset/video_batch crea 			videos con las dets renderizadas para verificar visualmente que esten bien, guarda los videos 			en videos_new_with_detections_new_class (creo)
 
 frame_extractor.py  -> extrae frames de new_class_annotations a partir del video en model/dataset, guarda los frames 			en model/dataset/images/train    Ojo mover al exp pertinente
 

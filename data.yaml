@@ -1,5 +1,0 @@
-train: exp1/images/train
-val: exp1/images/val
-
-nc: 6  # Number of classes (change this to the number of your classes)
-names: ['Nothing', 'Unripe', 'Ripening', 'Optimal', 'Overripe', 'Rotten']  # Replace with your actual class names
