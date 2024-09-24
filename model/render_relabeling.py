@@ -6,7 +6,8 @@ class_color_map = {
     2: (0, 165, 255),  # Yellow (ripening)
     3: (0, 140, 255),  # Orange (optimal ripeness)
     4: (0, 69, 255),   # Darker orange (overripe)
-    5: (42, 42, 165)   # Brown (rotten)
+    5: (42, 42, 165),   # Brown (rotten)
+    -1: (255,0,0)       # Red (default class)
 }
 
 class_name_map = {
@@ -16,8 +17,6 @@ class_name_map = {
     4: "Overripe",
     5: "Rotten"
 }
-
-
 
 def render_detections(video_path, annotation_file, output_video_path):
     # Open the video file
@@ -41,9 +40,17 @@ def render_detections(video_path, annotation_file, output_video_path):
         for line in f.readlines():
             parts = line.strip().split()
             frame_number = int(parts[0])
-            track_id = int(parts[1])
-            class_id = int(float(parts[2]))  # You can use this to color the boxes by class
-            x_center, y_center, width, height = map(float, parts[3:7])
+            track_id = int(float(parts[1]))
+            try:
+                class_id = int(float(parts[2]))  # You can use this to color the boxes by class
+            except:
+                class_id = -1
+            try:
+                x_center, y_center, width, height = map(float, parts[3:7])
+            except:
+                print(parts)
+                print(annotation_file)
+                asdadasda
 
             if frame_number not in annotations:
                 annotations[frame_number] = []
@@ -118,9 +125,10 @@ def process_videos_with_detections(video_folder, annotations_folder, output_fold
 
 
 if __name__ == "__main__":
-    video_folder = './model/dataset/naranja_videos2/'  # Folder with original videos
-    annotations_folder = './new_class_annotations/naranja_videos2'  # Folder with updated annotations
-    output_folder = './videos_new_with_detections_new_class'  # Folder to save the output videos
-
-    # Process all videos in the folder and render detections
-    process_videos_with_detections(video_folder, annotations_folder, output_folder)
+    for i in range(1,4):
+        video_folder = f'./videos/naranja_videos{i}/raw_frames'  # Folder with original videos
+        annotations_folder = f'./fruit-ripeness-classificator/output/new_class_annotationsv2/naranja_videos{i}'  # Folder with updated annotations
+        output_folder = './fruit-ripeness-classificator/output/videos_with_new_detections_classv2'  # Folder to save the output videos
+    
+        # Process all videos in the folder and render detections
+        process_videos_with_detections(video_folder, annotations_folder, output_folder)
