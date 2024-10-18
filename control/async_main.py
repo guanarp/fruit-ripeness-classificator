@@ -61,6 +61,7 @@ class StreamingProcess(Process):
     def run(self):
         server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         server.connect((self.host, self.port))
+        #server.setblocking(False)
 
         header = b'FRAME'
         MAX_DGRAM_SIZE = 65000
@@ -124,7 +125,20 @@ B_izq = 115
 B_med = 81
 B_der = 38
 
+curr_ang_A  = A_med
+curr_ang_B = B_med
+
 def set_servos_angle(angleA, angleB):
+	
+	# # Calculate duty cycle for the given angle (angle between 0 and 180)
+	# duty_cycleA = 2.5+ (angleA / 18)
+	# pwma.ChangeDutyCycle(duty_cycleA)
+	# duty_cycleB = 2.5+ (angleB / 18)
+	# pwmb.ChangeDutyCycle(duty_cycleB)
+	# time.sleep(0.1)  # Allow time for the servo to move to the position
+	# pwma.ChangeDutyCycle(0)  # Stop sending PWM signal after movement
+	# pwma.ChangeDutyCycle(0)
+	
 	# Calculate duty cycle for the given angle (angle between 0 and 180)
 	duty_cycleA = 2.5+ (angleA / 18)
 	pwma.ChangeDutyCycle(duty_cycleA)
@@ -132,7 +146,7 @@ def set_servos_angle(angleA, angleB):
 	pwmb.ChangeDutyCycle(duty_cycleB)
 	time.sleep(0.1)  # Allow time for the servo to move to the position
 	pwma.ChangeDutyCycle(0)  # Stop sending PWM signal after movement
-	pwma.ChangeDutyCycle(0)
+	pwmb.ChangeDutyCycle(0)
 
 
 # Setup GPIO mode
@@ -146,6 +160,7 @@ fruits = []
 
 previous_state = GPIO.HIGH
 previous_state_out = GPIO.HIGH
+
 
 udp_data = None
 
@@ -165,6 +180,9 @@ HEADER = b'FRAME'  # Frame header
 # Init motors
 GPIO.output(MOTOR_PIN, GPIO.HIGH)  # Turn off output
 GPIO.output(FREQ_PIN, GPIO.HIGH)
+
+# Init servos
+set_servos_angle(A_med, B_med)
 
 
 async def udp_receiver():
@@ -205,22 +223,22 @@ async def gpio_handler():
 		previous_state = sensor_state
 		print(f"Number of fruits {len(fruits)}")
 
-		if udp_data is None:
-			print("------------------------------------")
-			print("Waiting data")
-			print("----------------------------------")
-		else:
-			print("------------------------------------")
-			print(f"Received this data: {udp_data}")
-			print("----------------------------------")
+		# if udp_data is None:
+			# print("------------------------------------")
+			# print("Waiting data")
+			# print("----------------------------------")
+		# else:
+			# print("------------------------------------")
+			# print(f"Received this data: {udp_data}")
+			# print("----------------------------------")
 			
 
 		sensor_state_out = GPIO.input(SENSOR_OUT_PIN)
 		if sensor_state_out == GPIO.LOW and previous_state_out == GPIO.HIGH:
 			print(udp_data)
 			previous_state_out = sensor_state_out
-			fruits.pop()
-			print("Popped a fruit")
+			#fruits.pop()
+			#print("Popped a fruit")
 			
 			print("Dropping fruit")
             
@@ -235,9 +253,9 @@ async def gpio_handler():
 				fruits.pop()  # Remove the processed fruit from the list
 				udp_data = None
 			else:
-				print("No valid UDP action received, not dropping fruit")
-			
-			
+				print(f"{udp_data}")
+			time.sleep(0.5)
+			set_servos_angle(A_med, B_med)
 			
 		previous_state_out = GPIO.input(SENSOR_OUT_PIN)
 		
