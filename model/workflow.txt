@@ -10,7 +10,9 @@ render_relabeling.py -> A partir de anotaciones en new_class_anotations y videos
 
 frame_extractor.py  -> extrae frames de new_class_annotations a partir del video en model/dataset, guarda los frames 			en model/dataset/images/train    Ojo mover al exp pertinente
 
-split_annotation.py -> splittea los txts en el formato de yolo a partir de anotaciones en new_class_annotations, 			frames de extracted_frames, y los guarda en models/dataset/labels/train; si las imgs no estan 			en models/dataset/images/train/ las mueve ahi de su path original   Ojo mover annotations al exp pertinente
+split_annotation.py -> splittea los txts en el formato de yolo a partir de anotaciones en new_class_annotations, 			frames de extracted_frames, y los guarda en fruit/datasets/labels/train; si las imgs no estan 			en models/dataset/images/train/ las mueve ahi de su path original   Ojo mover annotations al exp pertinente
+
+train_val_split.py -> splittea todo el dataset ya formatteado en train y val (y ahora test tambien)
 
 train.py -> 
 
