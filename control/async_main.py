@@ -161,6 +161,7 @@ fruits = []
 previous_state = GPIO.HIGH
 previous_state_out = GPIO.HIGH
 
+last_number_fruits = 0
 
 udp_data = None
 
@@ -184,6 +185,8 @@ GPIO.output(FREQ_PIN, GPIO.HIGH)
 # Init servos
 set_servos_angle(A_med, B_med)
 
+udp_queue = asyncio.Queue()
+
 
 async def udp_receiver():
     global udp_data
@@ -200,11 +203,12 @@ async def udp_receiver():
             if data.startswith(b'CLASS'):
                 udp_data = data[5:]
                 print(f"Received message: {udp_data} from {addr}")
+                await udp_queue.put(udp_data)  # Add the received data to the queue
         except BlockingIOError:
             await asyncio.sleep(0.01)
             
 async def gpio_handler():
-	global last_trigger_time, previous_state, previous_state_out, fruits, udp_data
+	global last_trigger_time, previous_state, previous_state_out, fruits, last_number_fruits#, udp_data
     
 	while True:
 		# Sensor check
@@ -212,50 +216,65 @@ async def gpio_handler():
 
 		if sensor_state == GPIO.LOW and previous_state == GPIO.HIGH:
 			print("Reading an object")
+			
+			
 			#last_trigger_time = timer()  # Update the last trigger time
 			GPIO.output(FREQ_PIN, GPIO.LOW)
 			time.sleep(0.1)
 			GPIO.output(MOTOR_PIN, GPIO.LOW)  # Turn on output
 			fruits.append(None)
-		else:
-			print(f"Didn't detect\t")
+		# else:
+		# 	print(f"Didn't detect\t")
 
 		previous_state = sensor_state
-		print(f"Number of fruits {len(fruits)}")
+		
+		curr_number_fruits = len(fruits)
+		if last_number_fruits != curr_number_fruits:
+			print(f"Number of fruits {len(fruits)}")
+			last_number_fruits = curr_number_fruits
 
 		# if udp_data is None:
 			# print("------------------------------------")
 			# print("Waiting data")
 			# print("----------------------------------")
 		# else:
-			# print("------------------------------------")
+			# print("------------------------------------")	
 			# print(f"Received this data: {udp_data}")
 			# print("----------------------------------")
 			
 
 		sensor_state_out = GPIO.input(SENSOR_OUT_PIN)
 		if sensor_state_out == GPIO.LOW and previous_state_out == GPIO.HIGH:
-			print(udp_data)
+			#print(udp_data)
+			udp_data_local = await udp_queue.get()  # Get the next UDP data from the queue
+			print(f"Processing udp_data: {udp_data_local} from the await")
+			print(udp_queue)
 			previous_state_out = sensor_state_out
 			#fruits.pop()
 			#print("Popped a fruit")
 			
 			print("Dropping fruit")
             
-			if udp_data == b"4":
-				print("Action: Turning servos for dropping type 1")
+			if udp_data_local == b"4" or udp_data_local == b"5":
+				print("Action: Turning servos for dropping type 4 or 5")
 				set_servos_angle(A_izq, B_izq)
 				fruits.pop()  # Remove the processed fruit from the list
-				udp_data = None
-			elif udp_data == b"2":
-				print("Action: Turning servos for dropping type 2")
+		
+				
+			elif udp_data_local == b"2" or udp_data_local == b"1":
+				print("Action: Turning servos for dropping type 2 or 1")
 				set_servos_angle(A_der, B_der)
 				fruits.pop()  # Remove the processed fruit from the list
-				udp_data = None
+				
+			elif udp_data_local ==b"3":
+				print("Action: Not moving servos because type 3")
+				fruits.pop()
 			else:
-				print(f"{udp_data}")
-			time.sleep(0.5)
+				print(f"{udp_data_local}")
+				set_servos_angle(A_izq, B_der)
+			time.sleep(0.6)
 			set_servos_angle(A_med, B_med)
+			# udp_data_local = None #Ahora puse No necesito hacer esto
 			
 		previous_state_out = GPIO.input(SENSOR_OUT_PIN)
 		
